@@ -15,7 +15,7 @@ upstream.
 | `package.json` | new `db:migrar` → `db:deploy` | name the pipeline runs |
 | `package.json` | `prepare` is `true` | husky needs `.git`, which deploys don't have |
 | `package-lock.json` | adds `@img/sharp-libvips-linux-x64@1.2.4` | upstream lock only has the musl (Alpine) build; `sharp` fails on Debian |
-| `src/index.ts` | `import './main';` | tsup builds all of `src/`, so this yields `dist/index.js` |
+| `src/index.ts` | `import './main';` | built as a tsup entry, so the unit's fixed `dist/index.js` exists |
 | `src/api/routes/index.router.ts` | `GET /saude` → `{"status":"ok"}` | deploy health check; no auth, no data |
 | `src/config/path.config.ts` | `INSTANCE_DIR`, `AUTH_DIR`, `STORE_DIR` under `EVOLUTION_DADOS` | sessions survive deploys and rollbacks; release dir is read-only |
 | `src/main.ts`, `src/api/abstract/abstract.repository.ts` | use `STORE_DIR` instead of `ROOT_DIR/store` | same reason |

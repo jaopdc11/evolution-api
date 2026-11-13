@@ -29,7 +29,9 @@ ok "existe"
 etapa "Caddy, memória e porta (pede a SUA senha do sudo)"
 # Evolution must not be public: drop the site the app creation made.
 # MemoryMax goes in a drop-in, which vps-admin never rewrites.
-saida=$(ssh -t "$HOST" sudo bash -c "'
+# Not captured, so the sudo password prompt shows. The port is handed back in a
+# file the login user owns, read by a plain ssh right after.
+ssh -t "$HOST" sudo bash -c "'
   set -e
   if [ -e /etc/caddy/sites/$APP.caddy ]; then
     rm -f /etc/caddy/sites/$APP.caddy
@@ -38,10 +40,10 @@ saida=$(ssh -t "$HOST" sudo bash -c "'
   install -d /etc/systemd/system/$APP.service.d
   printf \"[Service]\nMemoryMax=1G\n\" > /etc/systemd/system/$APP.service.d/memoria.conf
   systemctl daemon-reload
-  echo PORTA=\$(cat /etc/$APP/porta)
-'")
-porta=$(printf '%s\n' "$saida" | tr -d '\r' | sed -n 's/^PORTA=//p' | tail -1)
-[[ $porta =~ ^[0-9]+$ ]] || erro "não consegui ler a porta do app (saída: $saida)"
+  install -m 600 -o \"\$SUDO_USER\" /etc/$APP/porta /tmp/$APP-porta
+'"
+porta=$(ssh "$HOST" "cat /tmp/$APP-porta && rm -f /tmp/$APP-porta" | tr -d '\r')
+[[ $porta =~ ^[0-9]+$ ]] || erro "não consegui ler a porta do app (lido: '$porta')"
 ok "sem site no Caddy · MemoryMax=1G · porta $porta"
 
 etapa "variáveis de ambiente"
@@ -64,6 +66,8 @@ if grep -qx AUTHENTICATION_API_KEY <<<"$chaves"; then
 else
   chave_nova=$(openssl rand -hex 32)
   env_set AUTHENTICATION_API_KEY "$chave_nova"
+  # shown now: a later step may fail, and a rerun keeps the stored key unseen
+  printf '\n\e[1mChave da API (aparece só agora, guarde no gerenciador de senhas):\e[0m\n  %s\n\n' "$chave_nova"
 fi
 
 etapa "deploy"
@@ -85,6 +89,3 @@ ok "painel atualizado"
 printf '\n\e[1mPronto.\e[0m Manager (QR code) só por túnel:\n'
 printf '  ssh -N -L 8080:127.0.0.1:%s %s\n' "$porta" "$HOST"
 printf '  depois abra http://localhost:8080/manager\n'
-if [[ -n $chave_nova ]]; then
-  printf '\nChave da API (aparece só agora, guarde no gerenciador de senhas):\n  %s\n' "$chave_nova"
-fi

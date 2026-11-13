@@ -41,6 +41,7 @@ rm -rf instances store
 set -a; source .env; set +a
 
 [[ -d node_modules ]] || npm ci --no-audit --no-fund >"$LOG" 2>&1 || falha "npm ci"
+npm run typecheck >"$LOG" 2>&1 || falha "npm run typecheck"
 npm run build >"$LOG" 2>&1 || falha "npm run build"
 test -f dist/index.js || falha "dist/index.js not built"
 npm run db:migrar >"$LOG" 2>&1 || falha "npm run db:migrar"

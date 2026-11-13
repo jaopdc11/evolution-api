@@ -10,7 +10,8 @@ upstream.
 
 | File | Change | Why |
 |---|---|---|
-| `package.json` | `build` runs `db:generate` first | `tsc` needs the generated Prisma client |
+| `package.json` | `build` is `db:generate && tsup` (no `tsc`); new `typecheck` keeps `tsc --noEmit` | the deploy build runs outside the unit's memory limit; with `tsc` it peaked at 2.2 GB |
+| `tsup.config.ts` | entries `src/main.ts` and `src/index.ts` only, `cjs` only | `entry: ['src']` bundles every file separately: 1.2 GB peak, now ~150 MB |
 | `package.json` | new `db:migrar` → `db:deploy` | name the pipeline runs |
 | `package.json` | `prepare` is `true` | husky needs `.git`, which deploys don't have |
 | `package-lock.json` | adds `@img/sharp-libvips-linux-x64@1.2.4` | upstream lock only has the musl (Alpine) build; `sharp` fails on Debian |
@@ -24,7 +25,7 @@ Required env beyond upstream defaults: `DATABASE_SAVE_DATA_INSTANCE=true`
 
 ## Files in this folder
 
-- `smoke.sh` — builds, migrates against a throwaway Postgres 17 (Docker), boots,
+- `smoke.sh` — typechecks, builds, migrates against a throwaway Postgres 17 (Docker), boots,
   checks `/saude` and where instance data is written. `SMOKE_SEM_DADOS=1` runs it
   without `EVOLUTION_DADOS`.
 - `instalar.sh` — one-time VPS setup, run from the PC after creating the app in

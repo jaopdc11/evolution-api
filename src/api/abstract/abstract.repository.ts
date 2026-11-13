@@ -1,5 +1,5 @@
 import { ConfigService, Database } from '@config/env.config';
-import { ROOT_DIR } from '@config/path.config';
+import { STORE_DIR } from '@config/path.config';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
@@ -27,7 +27,7 @@ export abstract class Repository implements IRepository {
   }
 
   dbSettings: Database;
-  readonly storePath = join(ROOT_DIR, 'store');
+  readonly storePath = STORE_DIR;
 
   public writeStore = <T = any>(create: WriteStore<T>) => {
     if (!existsSync(create.path)) {

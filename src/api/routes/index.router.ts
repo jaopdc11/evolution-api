@@ -190,6 +190,11 @@ router.get('/assets/*', (req, res) => {
   }
 });
 
+// vps: health check for the vps-admin deploy (no auth, no data)
+router.get('/saude', (_req, res) => {
+  res.status(HttpStatus.OK).json({ status: 'ok' });
+});
+
 router
   .use((req, res, next) => telemetry.collectTelemetry(req, res, next))
 

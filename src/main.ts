@@ -17,7 +17,7 @@ import {
 } from '@config/env.config';
 import { onUnexpectedError } from '@config/error.config';
 import { Logger } from '@config/logger.config';
-import { ROOT_DIR } from '@config/path.config';
+import { ROOT_DIR, STORE_DIR } from '@config/path.config';
 import * as Sentry from '@sentry/node';
 import { ServerUP } from '@utils/server-up';
 import axios from 'axios';
@@ -68,7 +68,7 @@ async function bootstrap() {
   app.set('views', join(ROOT_DIR, 'views'));
   app.use(express.static(join(ROOT_DIR, 'public')));
 
-  app.use('/store', express.static(join(ROOT_DIR, 'store')));
+  app.use('/store', express.static(STORE_DIR));
 
   app.use('/', router);
 

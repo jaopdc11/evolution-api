@@ -3678,7 +3678,14 @@ export class BaileysStartupService extends ChannelStartupService {
       const keys: proto.IMessageKey[] = [];
       data.readMessages.forEach((read) => {
         if (isJidGroup(read.remoteJid) || isPnUser(read.remoteJid)) {
-          keys.push({ remoteJid: read.remoteJid, fromMe: read.fromMe, id: read.id });
+          // vps: em grupo o recibo de leitura precisa de quem enviou (participant), senão o WhatsApp ignora.
+          const participant = read.participant;
+          keys.push({
+            remoteJid: read.remoteJid,
+            fromMe: read.fromMe,
+            id: read.id,
+            ...(participant ? { participant } : {}),
+          });
         }
       });
       await this.client.readMessages(keys);
